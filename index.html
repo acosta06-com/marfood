@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mar Food - Supermercado Online</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos personalizados adicionales */
+        body { font-family: 'Inter', sans-serif; background-color: #ffffff; }
+        .text-stroke-red { -webkit-text-stroke: 1px #7f1d1d; text-stroke: 1px #7f1d1d; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out, padding 0.3s ease-out; padding: 0 1rem; }
+        .faq-item.open .faq-answer { max-height: 200px; padding: 0 1rem 1rem 1rem; }
+        .faq-item.open .faq-icon { transform: rotate(180deg); }
+        .faq-icon { transition: transform 0.3s ease-out; }
+        #departments-menu { opacity: 0; visibility: hidden; transform: translateY(10px); transition: opacity 0.2s ease-out, transform 0.2s ease-out, visibility 0.2s; }
+        .departments-dropdown-container:hover #departments-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        #productDetailModal.hidden { display: none; }
+        .checkout-step-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out, margin 0.5s ease-in-out; padding: 0 1.5rem; margin-top: 0; }
+        .checkout-step.active .checkout-step-content { max-height: 500px; padding-bottom: 1.5rem; margin-top: -0.5rem; }
+        @media (min-width: 990px) {
+            .custom-lg-hidden { display: none; }
+            .custom-lg-flex { display: flex; }
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+    <!-- ===== HEADER ===== -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-wrap lg:flex-nowrap items-center justify-between gap-y-3 py-3">
+                <div class="flex items-center gap-4">
+                    <button id="mobile-menu-button" class="lg:hidden text-2xl text-gray-600">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="hidden lg:flex items-center gap-4">
+                        <a href="#" id="logoHome-desktop"><img src="https://i.postimg.cc/Jz8BbfqW/Mar-Food-perfil-Facebook.png" alt="Logo Marfood" class="h-12"></a>
+                        <div class="relative departments-dropdown-container">
+                            <button id="departments-button" class="font-semibold text-gray-700 hover:text-red-600 whitespace-nowrap">Departamentos</button>
+                            <div id="departments-menu" class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-gray-200 w-72 z-50 py-2"></div>
+                        </div>
+                    </div>
+                </div>
+                <a href="#" id="logoHome-mobile" class="lg:hidden">
+                     <img src="https://i.postimg.cc/Jz8BbfqW/Mar-Food-perfil-Facebook.png" alt="Logo Marfood" class="h-12">
+                </a>
+                <div class="relative w-full lg:w-auto lg:flex-1 order-last lg:order-none">
+                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="Busca productos, marcas y más" class="w-full bg-gray-100 rounded-full py-2.5 px-4 pl-11 focus:outline-none focus:ring-2 focus:ring-red-400">
+                </div>
+                <div class="flex items-center">
+                    <button id="cartControl" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 sm:px-5 rounded-full flex items-center gap-2 sm:gap-2.5 transition-colors whitespace-nowrap">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cartItemCountBadge">0</span>
+                        <span class="hidden sm:inline">|</span>
+                        <span id="cartButtonTotal" class="hidden sm:inline text-sm">$0.00</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <nav class="border-t">
+            <div class="container mx-auto px-4 py-2.5 flex justify-center lg:justify-start items-center flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-gray-700">
+                 <a href="#latest" class="flex items-center space-x-2 hover:text-red-600"><i class="fas fa-fire" style="color: #ff6600;"></i><span>Última Oportunidad</span></a>
+             </div>
+        </nav>
+    </header>
+    
+    <div class="bg-red-100 text-red-800 text-center py-2 px-4 text-sm font-semibold">
+        Servicio solo en Hermosillo
+    </div>
+    
+    <div id="mobile-menu" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="bg-white w-4/5 max-w-sm h-full shadow-lg p-6 flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Departamentos</h2>
+                <button id="close-mobile-menu" class="text-2xl">&times;</button>
+            </div>
+            <div id="mobile-departments-list" class="flex-grow overflow-y-auto"></div>
+        </div>
+    </div>
+
+    <div id="page-container" class="container mx-auto px-4 py-8">
+        <main id="mainCatalogView"></main>
+        <div id="categoryPageContainer" class="hidden"></div>
+        <div id="searchResultPage" class="hidden"></div>
+        <div id="checkoutPageView" class="hidden"></div>
+    </div>
+
+    <div id="productDetailModal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"></div>
+
+    <footer class="bg-white mt-12 border-t-2 border-gray-100">
+        <div class="container mx-auto px-4 py-12">
+            <div class="flex justify-center mb-8">
+                <img src="https://i.postimg.cc/Jz8BbfqW/Mar-Food-perfil-Facebook.png" alt="Logo Marfood" class="h-12">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8 text-center md:text-left">
+                <div class="flex items-center justify-center md:col-span-1 lg:col-span-1">
+                    <button id="shareButton" class="border-2 border-red-600 text-red-600 font-bold py-2 px-6 rounded-full hover:bg-red-600 hover:text-white transition-colors">
+                        Invita a un amigo
+                    </button>
+                </div>
+                <div class="text-sm">
+                    <h4 class="font-bold mb-3 text-gray-800">¿Necesitas ayuda?</h4>
+                    <div class="flex items-center justify-center md:justify-start">
+                        <a href="https://api.whatsapp.com/send?phone=+5216624453037" class="text-gray-600 hover:text-red-600">
+                            <i class="fab fa-whatsapp text-3xl"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="text-sm">
+                    <h4 class="font-bold mb-3 text-gray-800">Acerca de Marfood</h4>
+                     <a href="#" class="block text-gray-600 hover:text-red-600">Vende con nosotros</a>
+                </div>
+                 <div class="text-sm">
+                    <h4 class="font-bold mb-3 text-gray-800">Legal</h4>
+                     <a href="#" class="block text-gray-600 hover:text-red-600">Términos y condiciones</a>
+                </div>
+                <div class="flex flex-col items-center md:items-start space-y-4">
+                    <h4 class="font-bold text-gray-800">Síguenos</h4>
+                    <div class="flex items-center space-x-4">
+                        <a href="#" class="text-gray-600 hover:text-black"><i class="fab fa-instagram text-2xl"></i></a>
+                        <a href="#" class="text-gray-600 hover:text-black"><i class="fab fa-facebook-f text-2xl"></i></a>
+                    </div>
+                </div>
+            </div>
+             <div class="text-center text-gray-500 text-sm mt-12 pt-8 border-t">
+                 <p>&copy; 2025 Mar food. All rights reserved</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-[59] hidden transition-opacity duration-300"></div>
+    <aside id="cart-sidebar" class="fixed top-0 right-0 h-full w-full max-w-sm bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-[60] flex flex-col">
+       <div class="flex items-center justify-between p-4 border-b">
+            <button id="close-cart-button" class="text-gray-500 hover:text-black"><i class="fas fa-times text-xl"></i></button>
+            <h2 class="text-xl font-bold">Tus artículos</h2>
+            <div class="w-8"></div>
+        </div>
+        <div id="cartItemsContainer" class="flex-grow overflow-y-auto p-4 space-y-4"></div>
+        <div id="cartFooter" class="p-4 border-t space-y-4">
+            <div id="cartPromoBar" class="bg-blue-100 text-blue-800 text-center p-3 rounded-lg text-sm hidden"></div>
+            <div class="flex justify-between font-bold text-lg">
+                <span>Total parcial</span>
+                <span id="cartSubtotalSidebar">$0.00</span>
+            </div>
+             <div id="minPurchaseMessage" class="text-center text-red-600 text-sm hidden">Mínimo de compra de $200</div>
+            <button id="goToCheckoutBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition-colors disabled:bg-gray-400">Ir a pagar</button>
+        </div>
+    </aside>
+
+    <div id="sortModalOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-[61] hidden items-center justify-center p-4">
+         <div class="bg-white rounded-xl shadow-lg w-full max-w-sm p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Ordenar por</h3>
+                <button id="closeSortModalBtn" class="text-gray-400 hover:text-gray-700">&times;</button>
+            </div>
+            <div class="space-y-2">
+                <label class="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <input type="radio" name="sortOption" value="default" class="h-4 w-4 text-red-600 border-gray-300 focus:ring-red-500">
+                    <span class="ml-3 text-gray-700">Elegido para ti (predeterminado)</span>
+                </label>
+                <label class="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <input type="radio" name="sortOption" value="price-desc" class="h-4 w-4 text-red-600 border-gray-300 focus:ring-red-500">
+                    <span class="ml-3 text-gray-700">Costo: de mayor a menor</span>
+                </label>
+                <label class="flex items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer">
+                    <input type="radio" name="sortOption" value="price-asc" class="h-4 w-4 text-red-600 border-gray-300 focus:ring-red-500">
+                    <span class="ml-3 text-gray-700">Costo: de menor a mayor</span>
+                </label>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                 <button id="resetSortBtn" class="px-4 py-2 rounded-lg text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold">Restablecer</button>
+                 <button id="applySortBtn" class="px-4 py-2 rounded-lg text-white bg-red-600 hover:bg-red-700 font-semibold">Aplicar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // ===== CONFIGURACIÓN DE GOOGLE SHEETS =====
+        const PRODUCTS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ56yZaLjXZov4QqFm7x2Bl4KBBsj5uEy9GzVTOIE23Ax_2MJSGLzDPus7Ws1l-ck9mxzAFkaJwpn48/pub?gid=0&single=true&output=csv';
+        const BANNERS_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQ56yZaLjXZov4QqFm7x2Bl4KBBsj5uEy9GzVTOIE23Ax_2MJSGLzDPus7Ws1l-ck9mxzAFkaJwpn48/pub?gid=1510255315&single=true&output=csv';
+
+        // --- ESTADO DE LA APLICACIÓN ---
+        let cart = [];
+        let allProductsData = [];
+        let allBannersData = [];
+        let categoryData = [];
+        let faqData = [];
+        let currentSortOrder = 'default';
+        let checkoutData = { phone: '', firstName: '', lastName: '', street: '', number: '', neighborhood: '', deliveryDate: '' };
+        const MINIMUM_PURCHASE_AMOUNT = 200;
+        const SHIPPING_COST = 50.00;
+        const FREE_SHIPPING_THRESHOLD = 800.00;
+        
+        // --- FUNCIONES COMPLETAS ---
+        function initializeData() {
+            const categoryDefinitions = [
+                { id: 'congelados', name: 'Congelados', image: 'https://cdn-icons-png.freepik.com/256/3082/3082004.png' },
+                { id: 'lacteos-huevos', name: 'Lácteos y Huevos', image: 'https://cdn-icons-png.freepik.com/256/2843/2843545.png' },
+                { id: 'carnes-pescados', name: 'Carnes y Pescados', image: 'https://cdn-icons-png.freepik.com/256/2843/2843630.png' },
+                { id: 'a-granel', name: 'A Granel', image: 'https://cdn-icons-png.freepik.com/256/2843/2843616.png' },
+                { id: 'salchichoneria', name: 'Salchichonería', image: 'https://cdn-icons-png.freepik.com/256/3821/3821074.png' },
+                { id: 'aderezos', name: 'Aderezos', image: 'https://cdn-icons-png.freepik.com/256/3753/3753944.png' },
+                { id: 'bebidas', name: 'Bebidas', image: 'https://cdn-icons-png.freepik.com/256/3050/3050130.png' },
+                { id: 'abarrotes', name: 'Abarrotes', image: 'https://cdn-icons-png.freepik.com/256/3082/3082013.png' },
+                { id: 'margarinas', name: 'Margarinas', image: 'https://cdn-icons-png.freepik.com/256/12687/12687205.png' },
+                { id: 'papas', name: 'Papas', image: 'https://cdn-icons-png.freepik.com/128/1784/1784133.png' },
+                { id: 'quesos', name: 'Quesos', image: 'https://cdn-icons-png.freepik.com/256/3081/3081957.png' }
+            ];
+            
+            faqData = [
+                { question: '¿Qué es Marfood?', answer: 'Marfood es tu proveedor ideal, ya sea que tengas un negocio o simplemente te guste comprar al mayoreo para encontrar los mejores precios. Te ofrecemos una gran variedad de productos de calidad sin necesidad de una membresía. ¡Ahorra con nosotros en cada compra!' },
+                { question: '¿Cuál es la cobertura del servicio?', answer: 'Actualmente, nuestro servicio está disponible exclusivamente en la ciudad de Hermosillo, Sonora. Estamos trabajando para expandirnos a nuevas áreas pronto.' },
+                { question: '¿Mi pago es seguro?', answer: '¡Totalmente! Utilizamos las plataformas de pago más seguras del mercado para procesar todas las transacciones. Tus datos están encriptados y protegidos en todo momento.' },
+                { question: 'Me gustaría vender mis productos aquí', answer: '¡Nos encanta la idea! Constantemente estamos buscando nuevos productos. Escríbenos para que analicemos mejor la manera de trabajar en conjunto.' }
+            ];
+
+            categoryData = categoryDefinitions;
+        }
+
+        async function fetchCsvData(url) {
+            try {
+                const response = await fetch(`${url}&t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error(`Error al cargar datos desde ${url}`);
+                return await response.text();
+            } catch (error) {
+                console.error(error);
+                return null;
+            }
+        }
+
+        function parseCsv(csvText) {
+            if(!csvText) return [];
+            const rows = csvText.split('\n').map(row => row.split(','));
+            const headers = rows[0].map(h => h.trim());
+            return rows.slice(1).map(row => {
+                const item = {};
+                headers.forEach((header, index) => {
+                    item[header] = row[index] ? row[index].trim() : '';
+                });
+                return item;
+            });
+        }
+        
+        async function fetchAllData() {
+            try {
+                const [productsCsv, bannersCsv] = await Promise.all([
+                    fetchCsvData(PRODUCTS_SHEET_URL),
+                    fetchCsvData(BANNERS_SHEET_URL)
+                ]);
+
+                if (productsCsv) {
+                    allProductsData = parseCsv(productsCsv).map(p => ({
+                        ...p,
+                        price: parseFloat(p.precio) || 0,
+                        cost: parseFloat(p.costo) || 0,
+                        onSale: p.enOferta === 'TRUE',
+                        isNew: p.esNuevo === 'TRUE',
+                        originalPrice: parseFloat(p.precioOriginal) || null,
+                    }));
+                }
+                 if (bannersCsv) {
+                    allBannersData = parseCsv(bannersCsv);
+                }
+            } catch (error) {
+                 console.error("Error al cargar los datos iniciales:", error);
+                 document.getElementById('page-container').innerHTML = '<p class="text-center text-red-500">No se pudieron cargar los datos de la tienda. Por favor, revisa la configuración de Google Sheets y que los enlaces estén publicados correctamente.</p>';
+            }
+        }
+
+        function loadState() {
+            const savedCart = localStorage.getItem('marfoodCart');
+            if (savedCart) cart = JSON.parse(savedCart);
+            const savedCheckout = localStorage.getItem('marfoodCheckout');
+            if(savedCheckout) checkoutData = JSON.parse(savedCheckout);
+        }
+
+        function saveState() {
+            localStorage.setItem('marfoodCart', JSON.stringify(cart));
+            localStorage.setItem('marfoodCheckout', JSON.stringify(checkoutData));
+        }
+
+        function showView(viewName) {
+            const mainCatalogView = document.getElementById('mainCatalogView');
+            const categoryPageContainer = document.getElementById('categoryPageContainer');
+            const searchResultPage = document.getElementById('searchResultPage');
+            const checkoutPageView = document.getElementById('checkoutPageView');
+            const productDetailModal = document.getElementById('productDetailModal');
+
+            const isModal = viewName === 'product';
+            [mainCatalogView, categoryPageContainer, searchResultPage, checkoutPageView].forEach(v => v && v.classList.add('hidden'));
+            const viewMap = { main: mainCatalogView, category: categoryPageContainer, search: searchResultPage, checkout: checkoutPageView };
+            if (viewMap[viewName]) viewMap[viewName].classList.remove('hidden');
+            
+            if (isModal) {
+                productDetailModal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                productDetailModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function handleHashChange() {
+            const hash = window.location.hash || '#';
+            if (hash.startsWith('#product=')) {
+                const product = allProductsData.find(p => p.id === hash.substring('#product='.length));
+                if (product) { renderProductDetail(product); showView('product'); } else { history.back(); }
+            } else if (hash.startsWith('#category=')) {
+                renderCategoryPage(hash.substring('#category='.length));
+                showView('category');
+            } else if (hash.startsWith('#search=')) {
+                renderSearchPage(decodeURIComponent(hash.substring('#search='.length)));
+                showView('search');
+            } else if (hash === '#checkout') {
+                renderCheckoutPage();
+                showView('checkout');
+            } else if (hash === '#latest') {
+                renderLatestProductsPage();
+                showView('category'); 
+            } else {
+                renderHomepageContent();
+                showView('main');
+            }
+        }
+
+        function renderProductCard(product) {
+            const saleTag = product.onSale ? `<div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">Rebaja</div>` : '';
+            const priceDisplay = product.onSale ? 
+                `<p class="font-bold text-lg text-red-600">$${product.price.toFixed(2)} <del class="text-sm text-gray-500 font-normal">$${product.originalPrice.toFixed(2)}</del></p>` :
+                `<p class="font-bold text-lg text-gray-800">$${product.price.toFixed(2)}</p>`;
+            
+            return `
+                <div class="product-card-container relative bg-white rounded-xl shadow-md p-3 sm:p-4 flex flex-col justify-between transition-shadow hover:shadow-lg h-full" data-product-id="${product.id}">
+                    ${saleTag}
+                    <a href="#product=${product.id}" class="block flex-grow">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-32 object-contain mb-3 rounded-md" onerror="this.onerror=null;this.src='https://placehold.co/150x150/e0e0e0/777?text=Producto';">
+                        ${priceDisplay}
+                        <p class="text-sm text-gray-700 h-10">${product.name}</p>
+                        <p class="text-xs text-gray-500">${product.unit || ''} ${product.pricePerUnit || ''}</p>
+                    </a>
+                    <div class="mt-4">
+                        <div class="add-to-cart-initial">
+                            <button class="add-to-cart-button w-full bg-red-100 text-red-700 font-bold py-2 px-3 rounded-full flex items-center justify-center gap-2 hover:bg-red-200 transition-colors text-sm" data-id="${product.id}">
+                                <i class="fas fa-plus"></i> Agregar
+                            </button>
+                        </div>
+                        <div class="quantity-controller hidden flex items-center justify-between border border-gray-300 rounded-full">
+                            <button class="decrease-cart-item-btn text-red-600 font-bold w-10 h-10 rounded-l-full hover:bg-red-50" data-id="${product.id}">-</button>
+                            <span class="quantity-text font-bold text-lg">1</span>
+                            <button class="increase-cart-item-btn text-red-600 font-bold w-10 h-10 rounded-r-full hover:bg-red-50" data-id="${product.id}">+</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderProductGrid(container, products) {
+              if (!container) return;
+              let sortedProducts = [...products];
+              if (currentSortOrder === 'price-asc') sortedProducts.sort((a, b) => a.price - b.price);
+              else if (currentSortOrder === 'price-desc') sortedProducts.sort((a, b) => b.price - a.price);
+              container.innerHTML = sortedProducts.length > 0 ? sortedProducts.map(renderProductCard).join('') : `<p class="col-span-full text-center text-gray-500 py-10">No se encontraron productos.</p>`;
+              cart.forEach(item => updateProductCardUI(item.id));
+        }
+
+        function renderHomepageContent() {
+            const mainCatalogView = document.getElementById('mainCatalogView');
+            if (!mainCatalogView) return;
+            mainCatalogView.innerHTML = `
+                <section id="banner-slider" class="relative w-full mx-auto overflow-hidden rounded-lg shadow-lg mb-12"><div id="slider-track" class="flex transition-transform duration-500 ease-in-out"></div><button id="prev-button" class="absolute top-1/2 left-3 transform -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full w-10 h-10 flex items-center justify-center transition"><i class="fas fa-chevron-left text-gray-800"></i></button><button id="next-button" class="absolute top-1/2 right-3 transform -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full w-10 h-10 flex items-center justify-center transition"><i class="fas fa-chevron-right text-gray-800"></i></button><div id="pagination-dots" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2"></div></section>
+                <section id="categories-section" class="mt-12 relative"><div class="flex justify-between items-center mb-6"><h3 class="text-2xl font-bold text-gray-800">Nuestros Departamentos</h3><div id="category-nav-buttons" class="hidden md:flex space-x-2"><button id="category-prev-button" class="bg-gray-200 hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center transition disabled:opacity-50 disabled:cursor-not-allowed"><i class="fas fa-chevron-left text-gray-600"></i></button><button id="category-next-button" class="bg-gray-200 hover:bg-red-100 rounded-full w-8 h-8 flex items-center justify-center transition"><i class="fas fa-chevron-right text-gray-600"></i></button></div></div><div id="categoriesContainerWrapper" class="overflow-x-auto no-scrollbar"><div id="categoriesContainer" class="flex space-x-6"></div></div></section>
+                <div id="homepageProductsContainer" class="mt-12"></div>
+                <section id="promo-banners" class="mt-16">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 p-4 flex flex-col justify-between h-80">
+                            <div>
+                                <h3 class="font-bold text-gray-500 text-sm">Justo</h3>
+                                <h2 class="text-xl font-extrabold text-gray-800 leading-tight mt-2">CIENTOS DE PRODUCTOS DE COSTCO</h2>
+                            </div>
+                            <a href="#" class="font-bold text-red-600 self-start mt-4">¡Descúbrelos ahora! &rarr;</a>
+                        </div>
+                        <div class="bg-yellow-200 rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 p-4 flex flex-col justify-between h-80 text-center">
+                            <h2 class="text-2xl font-extrabold text-orange-600 leading-tight">PRE-VACACIONES</h2>
+                            <p class="text-gray-700 font-semibold">MARCA #1 DE REPELENTES EN MÉXICO</p>
+                             <img src="https://i.postimg.cc/8P9kQjYq/off-repelente.png" alt="Repelente Off" class="w-2/3 mx-auto object-contain">
+                            <a href="#" class="font-bold text-orange-700 mt-4">¡Compra aquí! &rarr;</a>
+                        </div>
+                        <div class="bg-blue-100 rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 p-4 flex flex-col justify-between h-80 text-center items-center">
+                            <h2 class="text-xl font-bold text-blue-800 leading-tight">Piel saludable, suave y protegida.</h2>
+                            <h3 class="text-2xl font-extrabold text-blue-900">CON PRECIOS ESPECIALES</h3>
+                             <img src="https://i.postimg.cc/k47tX6fN/eucerin.png" alt="Eucerin" class="w-1/2 mx-auto object-contain">
+                            <a href="#" class="font-bold text-blue-800 mt-4">¡Pide aquí! &rarr;</a>
+                        </div>
+                        <div class="bg-blue-500 text-white rounded-lg shadow-md overflow-hidden transform hover:scale-105 transition-transform duration-300 p-4 flex flex-col justify-between h-80 text-center items-center">
+                            <h2 class="text-2xl font-extrabold leading-tight">RESISTENCIA Y CALIDAD</h2>
+                            <p class="font-semibold">TODOS LOS DÍAS</p>
+                            <img src="https://i.postimg.cc/y8XnB3Y5/regio.png" alt="Papel Regio" class="w-2/3 mx-auto object-contain">
+                            <a href="#" class="font-bold bg-yellow-400 text-blue-900 px-4 py-2 rounded-full mt-4">¡Pide aquí! &rarr;</a>
+                        </div>
+                    </div>
+                </section>
+                <section id="faq-section" class="mt-16"><h3 class="text-2xl font-bold text-gray-800 mb-6 text-center tracking-wider">PREGUNTAS FRECUENTES</h3><div id="faqContainer" class="max-w-4xl mx-auto space-y-3"></div></section>`;
+            
+            document.getElementById('slider-track').innerHTML = `
+                 <div class="w-full flex-shrink-0"><div class="bg-white p-6 md:p-8 flex flex-col items-center justify-center text-center relative h-80 overflow-hidden"><img src="https://i.imgur.com/gK2RzO6.png" class="absolute left-0 top-0 w-40 transform -rotate-12 -translate-x-8 translate-y-4 opacity-80"><img src="https://i.imgur.com/K1i6K4h.png" class="absolute left-10 bottom-0 w-48 transform -rotate-6 -translate-x-8 -translate-y-4 opacity-80"><div class="z-10 relative"><h3 class="text-2xl font-bold text-red-600">Marfood</h3><h2 class="text-3xl md:text-4xl font-extrabold text-gray-800 leading-tight">CIENTOS DE<br>PRODUCTOS DE <img src="https://i.imgur.com/rG7Ece7.png" alt="Costco Wholesale" class="inline-block h-8 md:h-10 -mb-2"></h2><button class="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full inline-flex items-center text-lg transition-transform transform hover:scale-105">¡Descúbrelos ahora! <i class="fas fa-arrow-right ml-3"></i></button></div></div></div>
+                 <div class="w-full flex-shrink-0"><div class="bg-yellow-300 p-6 md:p-8 flex flex-col items-center justify-center text-center relative h-80 overflow-hidden"><img src="https://i.imgur.com/kS40T9r.png" class="absolute -left-12 -top-12 w-48 opacity-40 md:opacity-100 transform -rotate-12"><div class="z-10"><h2 class="text-3xl md:text-4xl font-bold text-gray-800">¡Lo mejor en cerveza!</h2><p class="text-5xl md:text-7xl font-extrabold text-white text-stroke-red" style="color: #DC2626;">40% <span class="text-4xl md:text-5xl">CASH BACK</span></p><p class="text-2xl font-semibold text-gray-800">EN HEINEKEN</p><button class="mt-4 bg-red-700 hover:bg-red-800 text-white font-bold py-3 px-8 rounded-full inline-flex items-center text-lg transition-transform transform hover:scale-105">¡Aprovecha ya! <i class="fas fa-arrow-right ml-3"></i></button></div></div></div>`;
+            setupSlider();
+            
+            renderHomepageCategories();
+            const homepageProductsContainer = document.getElementById('homepageProductsContainer');
+            const categoriesToDisplay = ['lacteos-huevos'];
+            
+            categoriesToDisplay.forEach(catId => {
+                const category = categoryData.find(c => c.id === catId);
+                if (category) {
+                    const productsForCategory = allProductsData.filter(p => p.category === category.id).slice(0, 10);
+                    if (productsForCategory.length > 0) {
+                        const sectionEl = document.createElement('section');
+                        sectionEl.className = 'mt-12';
+                        sectionEl.innerHTML = `<div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold text-gray-800">${category.name}</h3><a href="#category=${category.id}" class="text-red-600 font-semibold hover:underline">Ver todo <i class="fas fa-chevron-right text-xs"></i></a></div><div class="relative"><div class="overflow-x-auto no-scrollbar pb-4"><div class="flex space-x-6">${productsForCategory.map(p => `<div class="flex-shrink-0 w-48 sm:w-56">${renderProductCard(p)}</div>`).join('')}</div></div></div>`;
+                        homepageProductsContainer.appendChild(sectionEl);
+                    }
+                }
+            });
+
+            const newProductsSection = document.createElement('section');
+            newProductsSection.className = 'mt-12';
+            const newProducts = allProductsData.filter(p => p.isNew).slice(0,10);
+            newProductsSection.innerHTML = `<div class="flex justify-between items-center mb-4"><h3 class="text-2xl font-bold text-gray-800">Productos Recientes</h3><a href="#latest" class="text-red-600 font-semibold hover:underline">Ver todo <i class="fas fa-chevron-right text-xs"></i></a></div><div class="relative"><div class="overflow-x-auto no-scrollbar pb-4"><div class="flex space-x-6">${newProducts.map(p => `<div class="flex-shrink-0 w-48 sm:w-56">${renderProductCard(p)}</div>`).join('')}</div></div></div>`;
+            homepageProductsContainer.appendChild(newProductsSection);
+            
+            renderFaqs();
+            setupCategorySlider();
+            cart.forEach(item => updateProductCardUI(item.id));
+        }
+
+        function renderHomepageCategories() {
+            const container = document.getElementById('categoriesContainer');
+            const departmentsMenu = document.getElementById('departments-menu');
+            if(container) {
+                container.innerHTML = categoryData.map(cat => `<a href="#category=${cat.id}" class="flex-shrink-0 w-24 flex flex-col items-center text-center group"><div class="rounded-full w-20 h-20 flex items-center justify-center bg-gray-100 shadow-md transition-transform group-hover:scale-110"><img src="${cat.image}" alt="${cat.name}" class="w-12 h-12 object-contain"></div><span class="mt-2 text-sm font-medium">${cat.name}</span></a>`).join('');
+            }
+            if(departmentsMenu) {
+                 departmentsMenu.innerHTML = `<div class="px-4 py-2 font-bold text-lg flex items-center border-b mb-2"><i class="fas fa-th mr-3"></i> Departamentos</div>${categoryData.map(cat => `<a href="#category=${cat.id}" class="block px-4 py-2.5 text-gray-700 hover:bg-red-50 hover:font-semibold rounded-md mx-2 flex items-center"><img src="${cat.image}" class="w-6 h-6 mr-3 object-contain"> ${cat.name}</a>`).join('')}`;
+            }
+        }
+
+        function renderFaqs() {
+            const faqContainer = document.getElementById('faqContainer');
+            if (!faqContainer) return;
+            faqContainer.innerHTML = faqData.map(faq => `<div class="faq-item bg-white border border-gray-200 rounded-lg"><button class="faq-question w-full flex justify-between items-center text-left p-4"><span class="font-semibold text-red-600">${faq.question}</span><i class="fas fa-chevron-down faq-icon text-red-600"></i></button><div class="faq-answer"><p class="text-gray-600 p-4 pt-0">${faq.answer}</p></div></div>`).join('');
+        }
+        
+        function renderCategoryPage(categoryId) {
+            const categoryPageContainer = document.getElementById('categoryPageContainer');
+            const category = categoryData.find(c => c.id === categoryId);
+            if (!category || !categoryPageContainer) { window.location.hash = '#'; return; }
+            categoryPageContainer.innerHTML = `<div class="flex justify-between items-center flex-wrap gap-4 mb-6"><h2 id="categoryNameHeader" class="text-3xl font-bold">${category.name}</h2><div class="flex items-center gap-4"><button onclick="history.back()" class="bg-white border border-gray-300 text-gray-700 rounded-full px-4 py-2 font-semibold flex items-center gap-2 hover:bg-gray-50"><i class="fas fa-arrow-left"></i> Volver</button><button id="openSortModalBtn" class="bg-white border border-gray-300 rounded-full px-4 py-2 font-semibold flex items-center gap-2 hover:bg-gray-50">Ordenar <i class="fas fa-chevron-down text-sm"></i></button></div></div><div id="categoryProductsContainerGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>`;
+            const products = allProductsData.filter(p => p.category === categoryId);
+            renderProductGrid(document.getElementById('categoryProductsContainerGrid'), products);
+        }
+
+        function renderSearchPage(searchTerm) {
+              const searchResultPage = document.getElementById('searchResultPage');
+              if (!searchResultPage) return;
+              searchResultPage.innerHTML = `<h2 id="searchResultTitle" class="text-3xl font-bold mb-6">Resultados para: "${searchTerm}"</h2><div id="searchProductsContainerGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>`;
+              const results = allProductsData.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+              renderProductGrid(document.getElementById('searchProductsContainerGrid'), results);
+        }
+
+        function renderLatestProductsPage() {
+            const categoryPageContainer = document.getElementById('categoryPageContainer');
+            if (!categoryPageContainer) return;
+            categoryPageContainer.innerHTML = `<div class="flex justify-between items-center flex-wrap gap-4 mb-6"><h2 id="categoryNameHeader" class="text-3xl font-bold">Última Oportunidad</h2><div class="flex items-center gap-4"><button onclick="history.back()" class="bg-white border border-gray-300 text-gray-700 rounded-full px-4 py-2 font-semibold flex items-center gap-2 hover:bg-gray-50"><i class="fas fa-arrow-left"></i> Volver</button></div></div><div id="latestProductsContainerGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>`;
+            const products = allProductsData.filter(p => p.isNew);
+            renderProductGrid(document.getElementById('latestProductsContainerGrid'), products);
+        }
+
+
+        function renderProductDetail(product) {
+            const productDetailModal = document.getElementById('productDetailModal');
+            if(!productDetailModal) return;
+            const similarProducts = allProductsData.filter(p => p.category === product.category && p.id !== product.id).slice(0, 5);
+            const isKilo = product.type === 'kilo';
+            
+            productDetailModal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col relative">
+                    <button onclick="history.back()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-2xl z-20"><i class="fas fa-times"></i></button>
+                    <div class="flex-grow overflow-y-auto p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 gap-8 pb-32">
+                        <div><img src="${product.image}" alt="${product.name}" class="w-full h-auto max-h-[400px] object-contain"></div>
+                        <div>
+                            <h2 class="text-3xl font-bold text-gray-800 mb-2">${product.name}</h2>
+                            <p class="text-3xl font-extrabold text-red-600 mb-1">$${product.price.toFixed(2)}</p>
+                            <p class="text-gray-500 text-sm mb-6">${product.pricePerUnit || ''}</p>
+                            <div class="border-t border-b py-4 my-4">
+                                 <h4 class="font-bold text-gray-800 mb-2">Información del producto</h4>
+                                 <p class="text-gray-600 text-sm">El precio final puede variar de acuerdo al peso real del producto.</p>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2 mt-8">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-4">Productos similares</h3>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">${similarProducts.map(renderProductCard).join('')}</div>
+                        </div>
+                    </div>
+                    <div class="absolute bottom-0 left-0 right-0 bg-white border-t p-4 flex items-center justify-between gap-4">
+                        <div class="flex items-center border rounded-full">
+                            <button id="modal-decrease-qty" class="text-red-600 font-bold w-12 h-12 text-2xl rounded-l-full hover:bg-red-50">-</button>
+                            <span id="modal-quantity" class="font-bold text-xl px-4">1</span>
+                            <button id="modal-increase-qty" class="text-red-600 font-bold w-12 h-12 text-2xl rounded-r-full hover:bg-red-50">+</button>
+                        </div>
+                        <button id="modal-add-to-cart" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-full flex-grow flex items-center justify-center text-lg">
+                            Agregar <span class="mx-2">|</span> <span id="modal-subtotal">$${product.price.toFixed(2)}</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            let quantity = 1;
+            const qtyElement = productDetailModal.querySelector('#modal-quantity');
+            const subtotalElement = productDetailModal.querySelector('#modal-subtotal');
+            const updateSubtotal = () => {
+                qtyElement.textContent = isKilo ? `${quantity} Kg` : quantity;
+                subtotalElement.textContent = `$${(product.price * quantity).toFixed(2)}`;
+            };
+            updateSubtotal();
+
+            productDetailModal.querySelector('#modal-decrease-qty').onclick = () => { if (quantity > 1) { quantity--; updateSubtotal(); } };
+            productDetailModal.querySelector('#modal-increase-qty').onclick = () => { quantity++; updateSubtotal(); };
+            productDetailModal.querySelector('#modal-add-to-cart').onclick = () => {
+                let itemInCart = cart.find(item => item.id === product.id);
+                if (itemInCart) itemInCart.quantity += quantity;
+                else cart.push({ ...product, quantity: quantity });
+                updateCartDisplay();
+                updateProductCardUI(product.id);
+                history.back();
+            };
+        }
+        
+        function renderCheckoutPage() {
+            const checkoutPageView = document.getElementById('checkoutPageView');
+            if (!checkoutPageView) return;
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+            const total = subtotal + shippingCost;
+
+            checkoutPageView.innerHTML = `
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-3xl font-bold">Checkout</h1>
+                    <a href="#" class="text-gray-600 hover:text-red-600 font-semibold flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Volver a la tienda
+                    </a>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 space-y-4">
+                        <!-- Paso 1: Contacto -->
+                        <div id="step-1" class="checkout-step bg-white rounded-lg shadow">
+                            <div class="p-6 flex items-center gap-4 cursor-pointer" data-step="1">
+                                <div class="step-indicator flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold">1</div>
+                                <h2 class="text-xl font-bold">Contacto</h2>
+                            </div>
+                            <div class="checkout-step-content px-6">
+                                <p class="text-gray-600 mb-4">Guardamos tu número de manera 100% segura para:</p>
+                                <ul class="list-disc list-inside text-gray-600 space-y-1 mb-6 text-sm">
+                                    <li>Identificar tu perfil</li>
+                                    <li>Notificarte sobre los estados de tu compra vía WhatsApp</li>
+                                </ul>
+                                <label for="phone" class="font-semibold text-gray-700">Número de Celular (WhatsApp)</label>
+                                <input type="tel" id="phone" value="${checkoutData.phone || ''}" placeholder="Ingresa tu número a 10 dígitos" class="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-red-400 focus:border-red-400">
+                                <div id="phone-error" class="text-red-500 text-sm mt-1 hidden">Este campo es obligatorio.</div>
+                                <button id="continue-to-step-2" class="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md w-full sm:w-auto">Continuar</button>
+                            </div>
+                        </div>
+
+                        <!-- Paso 2: Identificación -->
+                        <div id="step-2" class="checkout-step bg-white rounded-lg shadow">
+                            <div class="p-6 flex items-center gap-4 cursor-pointer" data-step="2">
+                                <div class="step-indicator flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold">2</div>
+                                <h2 class="text-xl font-bold">Identificación</h2>
+                            </div>
+                            <div class="checkout-step-content px-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="firstName" class="font-semibold text-gray-700">Nombre(s)</label>
+                                        <input type="text" id="firstName" value="${checkoutData.firstName || ''}" placeholder="Ingresa tu nombre" class="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-red-400 focus:border-red-400">
+                                        <div id="firstName-error" class="text-red-500 text-sm mt-1 hidden">Este campo es obligatorio.</div>
+                                    </div>
+                                    <div>
+                                        <label for="lastName" class="font-semibold text-gray-700">Apellidos</label>
+                                        <input type="text" id="lastName" value="${checkoutData.lastName || ''}" placeholder="Ingresa tus apellidos" class="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-red-400 focus:border-red-400">
+                                        <div id="lastName-error" class="text-red-500 text-sm mt-1 hidden">Este campo es obligatorio.</div>
+                                    </div>
+                                </div>
+                                <button id="continue-to-step-3" class="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md w-full sm:w-auto">Continuar</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Paso 3: Envío -->
+                         <div id="step-3" class="checkout-step bg-white rounded-lg shadow">
+                            <div class="p-6 flex items-center gap-4 cursor-pointer" data-step="3">
+                                <div class="step-indicator flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold">3</div>
+                                <h2 class="text-xl font-bold">Envío</h2>
+                            </div>
+                            <div class="checkout-step-content px-6">
+                                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                                    <div class="md:col-span-3">
+                                        <label for="street" class="font-semibold text-gray-700">Calle</label>
+                                        <input type="text" id="street" value="${checkoutData.street || ''}" placeholder="Nombre de la calle" class="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-red-400 focus:border-red-400">
+                                        <div id="street-error" class="text-red-500 text-sm mt-1 hidden">Campo obligatorio.</div>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label for="number" class="font-semibold text-gray-700">Número</label>
+                                        <input type="text" id="number" value="${checkoutData.number || ''}" placeholder="Ext. e Int." class="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-red-400 focus:border-red-400">
+                                        <div id="number-error" class="text-red-500 text-sm mt-1 hidden">Campo obligatorio.</div>
+                                    </div>
+                                </div>
+                                <div class="mt-4">
+                                    <label for="neighborhood" class="font-semibold text-gray-700">Colonia</label>
+                                    <input type="text" id="neighborhood" value="${checkoutData.neighborhood || ''}" placeholder="Ingresa tu colonia" class="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-red-400 focus:border-red-400">
+                                    <div id="neighborhood-error" class="text-red-500 text-sm mt-1 hidden">Campo obligatorio.</div>
+                                </div>
+                                <div class="mt-4">
+                                    <label class="font-semibold text-gray-700">Fecha de entrega</label>
+                                    <p class="text-xs text-gray-500 mb-2">Pedidos antes de las 9:30 AM pueden entregarse hoy. Después de esa hora, se programan para el día siguiente.</p>
+                                    <div id="delivery-dates" class="flex flex-wrap gap-2"></div>
+                                    <div id="delivery-date-error" class="text-red-500 text-sm mt-1 hidden">Selecciona una fecha.</div>
+                                </div>
+                                <button id="continue-to-step-4" class="mt-6 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-md w-full sm:w-auto">Continuar</button>
+                            </div>
+                        </div>
+                        <!-- Paso 4: Pago -->
+                         <div id="step-4" class="checkout-step bg-white rounded-lg shadow">
+                            <div class="p-6 flex items-center gap-4 cursor-pointer" data-step="4">
+                                <div class="step-indicator flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold">4</div>
+                                <h2 class="text-xl font-bold">Pago</h2>
+                            </div>
+                            <div class="checkout-step-content px-6 space-y-4">
+                                <p class="text-gray-600 text-sm bg-blue-50 border border-blue-200 rounded-lg p-3">
+                                    Se te mandarán las instrucciones de pago por WhatsApp.
+                                    <br>
+                                    <span class="font-semibold">En productos lácteos tipo Yakult sí aceptamos pago en efectivo. En los demás, se te mandarán las instrucciones.</span>
+                                </p>
+                                <button id="send-whatsapp-order" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-md flex items-center justify-center gap-3">
+                                    <i class="fab fa-whatsapp text-xl"></i>
+                                    Realizar Pedido por WhatsApp
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Columna Derecha: Resumen de Compra -->
+                    <div class="lg:col-span-1">
+                         <div class="bg-white rounded-lg shadow p-6 sticky top-28">
+                            <h3 class="text-xl font-bold border-b pb-4 mb-4">Resumen de la compra</h3>
+                            <div id="checkout-summary-items" class="space-y-4 max-h-60 overflow-y-auto pr-2">
+                                ${cart.map(item => `<div class="flex items-center gap-4 text-sm"><img src="${item.image}" class="w-12 h-12 object-contain rounded-md border"><div class="flex-grow"><p class="font-semibold text-gray-800">${item.name}</p><p class="text-gray-500">Cantidad: ${item.quantity}</p></div><p class="font-semibold">$${(item.price * item.quantity).toFixed(2)}</p></div>`).join('')}
+                            </div>
+                            <div class="border-t mt-4 pt-4 space-y-2 font-semibold">
+                                 <div class="flex justify-between"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+                                 <div class="flex justify-between text-gray-500"><span>Envío</span><span>${shippingCost > 0 ? `$${shippingCost.toFixed(2)}` : 'Gratis'}</span></div>
+                                 <div class="flex justify-between text-xl font-bold"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+                            </div>
+                            <div class="mt-6">
+                                <label for="comments" class="font-semibold text-gray-700">Comentarios</label>
+                                <textarea id="comments" rows="3" class="w-full mt-2 p-3 border rounded-md focus:ring-2 focus:ring-red-400 focus:border-red-400" placeholder="Instrucciones especiales para tu pedido..."></textarea>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+            `;
+            generateDeliveryDates();
+            activateCheckoutStep(1);
+        }
+
+        function generateDeliveryDates() {
+            const datesContainer = document.getElementById('delivery-dates');
+            if (!datesContainer) return;
+
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            const today = new Date();
+            const tomorrow = new Date();
+            tomorrow.setDate(today.getDate() + 1);
+            const afterTomorrow = new Date();
+            afterTomorrow.setDate(today.getDate() + 2);
+            
+            let availableDates = [];
+            const currentHour = today.getHours();
+            const currentMinutes = today.getMinutes();
+
+            if (currentHour < 9 || (currentHour === 9 && currentMinutes < 30)) {
+                availableDates.push({ label: 'Hoy', value: today.toDateString() });
+            }
+            
+            availableDates.push({ label: 'Mañana', value: tomorrow.toDateString() });
+            availableDates.push({ label: 'Pasado Mañana', value: afterTomorrow.toDateString() });
+
+            datesContainer.innerHTML = availableDates.map((d) => `
+                <label class="flex-1 min-w-[120px]">
+                    <input type="radio" name="deliveryDate" value="${d.value}" class="sr-only peer" ${checkoutData.deliveryDate === d.value ? 'checked' : ''}>
+                    <div class="p-3 border rounded-md text-center cursor-pointer peer-checked:bg-red-50 peer-checked:border-red-600 peer-checked:text-red-700 peer-checked:font-bold">
+                        <p>${d.label}</p>
+                        <p class="text-xs">${new Date(d.value).toLocaleDateString('es-MX', options)}</p>
+                    </div>
+                </label>
+            `).join('');
+        }
+        
+        function activateCheckoutStep(stepNumber) {
+              document.querySelectorAll('.checkout-step').forEach((step, index) => {
+                  const stepNum = index + 1;
+                  const indicator = step.querySelector('.step-indicator');
+                  const title = step.querySelector('h2');
+
+                  if (stepNum === stepNumber) {
+                      step.classList.add('active');
+                      step.classList.remove('opacity-50');
+                      indicator.classList.add('bg-red-600', 'text-white');
+                      indicator.classList.remove('bg-gray-300', 'text-gray-600');
+                      title.classList.add('text-gray-800');
+                      title.classList.remove('text-gray-500');
+                  } else if (stepNum < stepNumber) {
+                      step.classList.remove('active');
+                      step.classList.remove('opacity-50');
+                      indicator.innerHTML = '<i class="fas fa-check"></i>';
+                      indicator.classList.add('bg-green-500', 'text-white');
+                      indicator.classList.remove('bg-gray-300', 'text-gray-600');
+                       title.classList.add('text-gray-800');
+                      title.classList.remove('text-gray-500');
+                  } else {
+                      step.classList.remove('active');
+                      step.classList.add('opacity-50');
+                      indicator.innerHTML = stepNum;
+                      indicator.classList.add('bg-gray-300', 'text-gray-600');
+                      indicator.classList.remove('bg-red-600', 'text-white', 'bg-green-500');
+                      title.classList.add('text-gray-500');
+                      title.classList.remove('text-gray-800');
+                  }
+              });
+        }
+        
+        function updateCartDisplay() {
+            const cartItemCountBadge = document.getElementById('cartItemCountBadge');
+            const cartButtonTotal = document.getElementById('cartButtonTotal');
+            const cartItemsContainer = document.getElementById('cartItemsContainer');
+            const cartFooter = document.getElementById('cartFooter');
+            const cartSubtotalSidebar = document.getElementById('cartSubtotalSidebar');
+            const goToCheckoutBtn = document.getElementById('goToCheckoutBtn');
+            const minPurchaseMessage = document.getElementById('minPurchaseMessage');
+            const cartPromoBar = document.getElementById('cartPromoBar');
+
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const totalItemsForBadge = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            if (cartItemCountBadge) cartItemCountBadge.textContent = Math.round(totalItemsForBadge);
+            if (cartButtonTotal) cartButtonTotal.textContent = `$${subtotal.toFixed(2)}`;
+
+            if (cart.length === 0) {
+                if (cartItemsContainer) cartItemsContainer.innerHTML = `<div class="text-center text-gray-500 p-8">Tu carrito está vacío</div>`;
+                if (cartFooter) cartFooter.classList.add('hidden');
+            } else {
+                if (cartFooter) cartFooter.classList.remove('hidden');
+                if (cartItemsContainer) cartItemsContainer.innerHTML = cart.map(item => {
+                    const productInfo = allProductsData.find(p => p.id === item.id);
+                    const displayQuantity = productInfo && productInfo.type === 'kilo' ? `${item.quantity} Kg` : item.quantity;
+                    return `<div class="flex items-center space-x-4"><img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded-lg object-contain" onerror="this.onerror=null;this.src='https://placehold.co/64x64/e0e0e0/777?text=Producto';"><div class="flex-grow"><p class="font-semibold">${item.name}</p><p class="font-bold text-lg text-red-600">$${(item.price * item.quantity).toFixed(2)}</p></div><div class="flex items-center border rounded-full px-2 py-1"><button data-id="${item.id}" class="cart-decrease-btn text-gray-500 hover:text-red-600 text-lg w-8 h-8">-</button><span class="px-3 font-semibold">${displayQuantity}</span><button data-id="${item.id}" class="cart-increase-btn text-gray-500 hover:text-red-600 text-lg w-8 h-8">+</button></div></div>`;
+                    }).join('');
+                if (cartSubtotalSidebar) cartSubtotalSidebar.textContent = `MX$${subtotal.toFixed(2)}`;
+                if (goToCheckoutBtn) goToCheckoutBtn.disabled = subtotal < MINIMUM_PURCHASE_AMOUNT;
+                if (minPurchaseMessage) minPurchaseMessage.style.display = subtotal < MINIMUM_PURCHASE_AMOUNT ? 'block' : 'none';
+
+                if (cartPromoBar) {
+                    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
+                        cartPromoBar.textContent = '¡Felicidades, tienes envío gratis!';
+                        cartPromoBar.style.display = 'block';
+                    } else {
+                        const remaining = FREE_SHIPPING_THRESHOLD - subtotal;
+                        cartPromoBar.textContent = `Te faltan $${remaining.toFixed(2)} para envío gratis`;
+                        cartPromoBar.style.display = 'block';
+                    }
+                }
+            }
+            saveState();
+        }
+        
+        function updateProductCardUI(productId) {
+            const productCards = document.querySelectorAll(`[data-product-id="${productId}"]`);
+            const itemInCart = cart.find(item => item.id === productId);
+            const product = allProductsData.find(p => p.id === productId);
+
+            productCards.forEach(card => {
+                const addBtn = card.querySelector('.add-to-cart-initial');
+                const controller = card.querySelector('.quantity-controller');
+                const quantityText = card.querySelector('.quantity-text');
+
+                if(itemInCart && itemInCart.quantity > 0) {
+                    addBtn.classList.add('hidden');
+                    controller.classList.remove('hidden');
+                    quantityText.textContent = product && product.type === 'kilo' ? `${itemInCart.quantity} Kg` : itemInCart.quantity;
+                } else {
+                    addBtn.classList.remove('hidden');
+                    controller.classList.add('hidden');
+                }
+            });
+        }
+
+        function openCart() {
+            document.getElementById('cart-overlay').classList.remove('hidden');
+            document.getElementById('cart-sidebar').classList.remove('translate-x-full');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCart() {
+            document.getElementById('cart-overlay').classList.add('hidden');
+            document.getElementById('cart-sidebar').classList.add('translate-x-full');
+            document.body.style.overflow = '';
+        }
+
+        function setupSlider() {
+            const track = document.getElementById('slider-track');
+            const prevBtn = document.getElementById('prev-button');
+            const nextBtn = document.getElementById('next-button');
+            const dotsContainer = document.getElementById('pagination-dots');
+            if (!track || !track.children.length || !prevBtn || !nextBtn || !dotsContainer) return;
+
+            const slides = Array.from(track.children);
+            let currentIndex = 0;
+            let autoSlideInterval;
+            dotsContainer.innerHTML = slides.map((_, index) => `<button class="w-3 h-3 rounded-full transition ${index === 0 ? 'bg-white' : 'bg-white/60'} hover:bg-white"></button>`).join('');
+            const dots = Array.from(dotsContainer.children);
+            dots.forEach((dot, index) => dot.addEventListener('click', () => goToSlide(index)));
+
+            const updateSlider = () => {
+                if (slides.length > 0 && slides[0]) {
+                    track.style.transform = `translateX(-${slides[0].getBoundingClientRect().width * currentIndex}px)`;
+                    dots.forEach((dot, index) => dot.classList.toggle('bg-white', index === currentIndex));
+                }
+            };
+            
+            const goToSlide = (index) => { currentIndex = (index + slides.length) % slides.length; updateSlider(); resetAutoSlide(); };
+            const startAutoSlide = () => autoSlideInterval = setInterval(() => goToSlide(currentIndex + 1), 5000);
+            const resetAutoSlide = () => { clearInterval(autoSlideInterval); startAutoSlide(); };
+            
+            prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+            nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+            startAutoSlide();
+            window.addEventListener('resize', updateSlider);
+        }
+        
+        function setupCategorySlider() {
+            const container = document.getElementById('categoriesContainerWrapper');
+            const prev = document.getElementById('category-prev-button');
+            const next = document.getElementById('category-next-button');
+            if (!container || !prev || !next) return;
+            const updateButtons = () => {
+                const maxScrollLeft = container.scrollWidth - container.clientWidth;
+                prev.disabled = container.scrollLeft < 10;
+                next.disabled = container.scrollLeft > maxScrollLeft - 10;
+            }
+            prev.addEventListener('click', () => { container.scrollBy({ left: -250, behavior: 'smooth' }); });
+            next.addEventListener('click', () => { container.scrollBy({ left: 250, behavior: 'smooth' }); });
+            container.addEventListener('scroll', updateButtons);
+            new MutationObserver(updateButtons).observe(container, { childList: true, subtree: true });
+            updateButtons();
+        }
+        
+        function applySort() {
+            const selected = document.querySelector('input[name="sortOption"]:checked');
+            currentSortOrder = selected ? selected.value : 'default';
+            handleHashChange();
+            closeSortModal();
+        }
+        
+        function closeSortModal() {
+            const sortModalOverlay = document.getElementById('sortModalOverlay');
+            if (sortModalOverlay) {
+                sortModalOverlay.classList.add('hidden');
+                sortModalOverlay.classList.remove('flex');
+            }
+        }
+        
+        async function init() {
+            initializeData();
+            loadState();
+            
+            try {
+                await fetchAllData();
+                handleHashChange();
+                window.addEventListener('hashchange', handleHashChange);
+                setupEventListeners();
+            } catch (error) {
+                console.error("Initialization failed:", error);
+            }
+        }
+        
+        function setupEventListeners() {
+            const body = document.body;
+            body.addEventListener('click', e => {
+                const target = e.target;
+                const button = target.closest('button');
+
+                if (button) {
+                     if (button.matches('.add-to-cart-button, .increase-cart-item-btn, .decrease-cart-item-btn, .cart-increase-btn, .cart-decrease-btn')) {
+                        const productId = button.dataset.id;
+                        const product = allProductsData.find(p => p.id === productId);
+                        if (!product) return;
+                        let itemInCart = cart.find(item => item.id === productId);
+                        if (button.matches('.add-to-cart-button, .increase-cart-item-btn, .cart-increase-btn')) {
+                            if (itemInCart) itemInCart.quantity++; else cart.push({ ...product, quantity: 1 });
+                        } else if (button.matches('.decrease-cart-item-btn, .cart-decrease-btn')) {
+                            if (itemInCart) {
+                                itemInCart.quantity--;
+                                if (itemInCart.quantity <= 0) cart = cart.filter(i => i.id !== productId);
+                            }
+                        }
+                        updateProductCardUI(productId);
+                        updateCartDisplay();
+                    } else if (button.id === 'goToCheckoutBtn') {
+                        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                        if (subtotal >= MINIMUM_PURCHASE_AMOUNT) {
+                            closeCart();
+                            window.location.hash = '#checkout';
+                        } else {
+                            alert(`El mínimo de compra es de $${MINIMUM_PURCHASE_AMOUNT}.`);
+                        }
+                    } else if (button.id === 'openSortModalBtn') {
+                        const sortModalOverlay = document.getElementById('sortModalOverlay');
+                        const currentOption = sortModalOverlay.querySelector(`input[name="sortOption"][value="${currentSortOrder}"]`);
+                        if(currentOption) currentOption.checked = true;
+                        sortModalOverlay.classList.remove('hidden');
+                        sortModalOverlay.classList.add('flex');
+                    } else if (button.id === 'continue-to-step-2') {
+                        const phoneInput = document.getElementById('phone');
+                        const errorDiv = document.getElementById('phone-error');
+                        if (phoneInput && phoneInput.value.trim().length >= 10) {
+                            checkoutData.phone = phoneInput.value.trim();
+                            saveState();
+                            activateCheckoutStep(2);
+                            if(errorDiv) errorDiv.classList.add('hidden');
+                        } else {
+                            if(errorDiv) errorDiv.classList.remove('hidden');
+                        }
+                    } else if (button.id === 'continue-to-step-3') {
+                        const firstNameInput = document.getElementById('firstName');
+                        const lastNameInput = document.getElementById('lastName');
+                        let valid = true;
+                        if(!firstNameInput || firstNameInput.value.trim() === ''){
+                            document.getElementById('firstName-error').classList.remove('hidden');
+                            valid = false;
+                        } else {
+                            document.getElementById('firstName-error').classList.add('hidden');
+                        }
+                        if(!lastNameInput || lastNameInput.value.trim() === ''){
+                             document.getElementById('lastName-error').classList.remove('hidden');
+                             valid = false;
+                        } else {
+                            document.getElementById('lastName-error').classList.add('hidden');
+                        }
+                        if(valid){
+                            checkoutData.firstName = firstNameInput.value.trim();
+                            checkoutData.lastName = lastNameInput.value.trim();
+                            saveState();
+                            activateCheckoutStep(3);
+                        }
+                    } else if (button.id === 'continue-to-step-4') {
+                      const streetInput = document.getElementById('street');
+                      const numberInput = document.getElementById('number');
+                      const neighborhoodInput = document.getElementById('neighborhood');
+                      const dateInput = document.querySelector('input[name="deliveryDate"]:checked');
+                      let valid = true;
+                      if(!streetInput || streetInput.value.trim() === ''){ document.getElementById('street-error').classList.remove('hidden'); valid = false; } else { document.getElementById('street-error').classList.add('hidden'); }
+                      if(!numberInput || numberInput.value.trim() === ''){ document.getElementById('number-error').classList.remove('hidden'); valid = false; } else { document.getElementById('number-error').classList.add('hidden'); }
+                      if(!neighborhoodInput || neighborhoodInput.value.trim() === ''){ document.getElementById('neighborhood-error').classList.remove('hidden'); valid = false; } else { document.getElementById('neighborhood-error').classList.add('hidden'); }
+                      if(!dateInput){ document.getElementById('delivery-date-error').classList.remove('hidden'); valid = false; } else { document.getElementById('delivery-date-error').classList.add('hidden'); }
+                      
+                      if(valid){
+                          checkoutData.street = streetInput.value.trim();
+                          checkoutData.number = numberInput.value.trim();
+                          checkoutData.neighborhood = neighborhoodInput.value.trim();
+                          checkoutData.deliveryDate = dateInput.value;
+                          saveState();
+                          activateCheckoutStep(4);
+                      }
+                    } else if (button.id === 'send-whatsapp-order') {
+                        const PHONE_NUMBER = '5216624453037';
+                        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                        const shippingCost = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+                        const total = subtotal + shippingCost;
+                        const comments = document.getElementById('comments').value;
+
+                        let message = `🛒 *Nuevo Pedido Mar Food* 🛒\n\n`;
+                        message += `*Cliente:*\n`;
+                        message += `Nombre: ${checkoutData.firstName} ${checkoutData.lastName}\n`;
+                        message += `Teléfono: ${checkoutData.phone}\n\n`;
+                        message += `*Dirección de Entrega:*\n`;
+                        message += `${checkoutData.street}, ${checkoutData.number}, Col. ${checkoutData.neighborhood}\n`;
+                        message += `Fecha de Entrega: ${new Date(checkoutData.deliveryDate).toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\n\n`;
+                        message += `----------\n`;
+                        message += `*Resumen del Pedido:*\n`;
+                        cart.forEach(item => {
+                            const quantity = item.type === 'kilo' ? `${item.quantity} Kg` : `x${item.quantity}`;
+                            message += `- ${item.name} (${quantity}) - $${(item.price * item.quantity).toFixed(2)}\n`;
+                        });
+                        message += `----------\n\n`;
+                        message += `*Totales:*\n`;
+                        message += `Subtotal: $${subtotal.toFixed(2)}\n`;
+                        message += `Envío: ${shippingCost > 0 ? `$${shippingCost.toFixed(2)}` : 'Gratis'}\n`;
+                        message += `*Total a Pagar: $${total.toFixed(2)}*\n\n`;
+
+                        if (comments.trim() !== '') {
+                            message += `*Comentarios:*\n${comments.trim()}\n`;
+                        }
+
+                        const whatsappUrl = `https://api.whatsapp.com/send?phone=${PHONE_NUMBER}&text=${encodeURIComponent(message)}`;
+                        window.open(whatsappUrl, '_blank');
+
+                    } else if (button.id === 'mobile-menu-button') {
+                        const mobileMenu = document.getElementById('mobile-menu');
+                        const mobileDepartmentsList = document.getElementById('mobile-departments-list');
+                        mobileDepartmentsList.innerHTML = categoryData.map(cat => `<a href="#category=${cat.id}" class="block py-3 px-2 text-lg text-gray-700 hover:bg-red-50 rounded-md">${cat.name}</a>`).join('');
+                        mobileMenu.classList.remove('hidden');
+                    } else if (button.id === 'close-mobile-menu') {
+                          document.getElementById('mobile-menu').classList.add('hidden');
+                    } else if (button.id === 'closeSortModalBtn') {
+                        closeSortModal();
+                    } else if (button.id === 'applySortBtn') {
+                        applySort();
+                    } else if (button.id === 'resetSortBtn') {
+                        const defaultRadio = document.querySelector('input[name="sortOption"][value="default"]');
+                        if(defaultRadio) defaultRadio.checked = true;
+                        applySort();
+                    } else if (button.id === 'shareButton') {
+                        const message = encodeURIComponent("Te quiero invitar a comprar en Marfood: " + window.location.origin + window.location.pathname);
+                        const whatsappUrl = `https://api.whatsapp.com/send?text=${message}`;
+                        window.open(whatsappUrl, '_blank');
+                    }
+                }
+
+                if (target.closest('#logoHome-desktop') || target.closest('#logoHome-mobile')) {
+                    e.preventDefault();
+                    window.location.hash = '#';
+                }
+
+                const faqItem = target.closest('.faq-item');
+                if (faqItem) {
+                    faqItem.classList.toggle('open');
+                }
+                
+                const stepHeader = target.closest('[data-step]');
+                if (stepHeader && !target.closest('button')) {
+                    const stepDiv = stepHeader.closest('.checkout-step');
+                    if (stepDiv && !stepDiv.classList.contains('opacity-50')) {
+                        const indicator = stepDiv.querySelector('.step-indicator');
+                        if (indicator.innerHTML.includes('fa-check')) {
+                             activateCheckoutStep(parseInt(stepHeader.dataset.step, 10));
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('searchInput').addEventListener('keyup', e => { if (e.key === 'Enter' && e.target.value) window.location.hash = `#search=${encodeURIComponent(e.target.value)}`; });
+            document.getElementById('cartControl').addEventListener('click', openCart);
+            document.getElementById('close-cart-button').addEventListener('click', closeCart);
+            document.getElementById('cart-overlay').addEventListener('click', closeCart);
+            document.getElementById('sortModalOverlay').addEventListener('click', e => { if (e.target === document.getElementById('sortModalOverlay')) closeSortModal(); });
+        }
+        
+        init().catch(console.error);
+    </script>
+</body>
+</html>
